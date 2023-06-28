@@ -1,34 +1,22 @@
 {
-    "manifest_version": 2,
-    "name": "Google Classroom Extension",
-    "version": "1.0",
-    "description": "Retrieve deadlines from Google Classroom.",
-    "permissions": [
-      "tabs",
-      "activeTab",
-      "identity",
-      "https://classroom.googleapis.com/*"
-    ],
-    "background": {
-      "scripts": ["background.js"],
-      "persistent": false
-    },
-    "browser_action": {
-      "default_popup": "popup.html"
-    },
-    "oauth2": {
-      "client_id": "662004468767-h4725tg392bera623ra1bv763fa387uq.apps.googleusercontent.com",
-      "scopes": [
-        "https://www.googleapis.com/auth/classroom.courses.readonly",
-        "https://www.googleapis.com/auth/classroom.student-submissions.me.readonly"
-      ]
-    },
-    "content_scripts": [
-      {
-        "matches": ["https://*/*", "http://*/*"],
-        "js": ["content.js"]
-      }
-    ],
-    "content_security_policy": "script-src 'self' https://apis.google.com/js/api.js; object-src 'self'"
-  }
-  
+  "name": "LMS DEADLINE COMPILER",
+  "version": "1.0",
+  "description": "",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "index.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvkbYsD/cUQ5OZhRURmObuBRdNtsfvqP1Sp9igMO4e6JnVfXwFhXWfgKN4JfJgdWgtJSUn7cpcEVXJUOCupAnT+ua6LdEE84WnVAjXvHKw1I7yLYvfdHPip7rU56GXoRm2Cj7lXEFBsQXNnTUQ2yQuTl3jD1XFFrVjjHNOlQFicRM7Xhhh8Gpa0oGIcd7N+yWo942iicisb0NJL135pGdU/zHBuDaallu+GJMIku1Pp69iASsu/nNnmQNdKZID6bhebzkPbB1x6mKRfev+6vND05snaJLKRxlXyvV04iEviZVdJ4ycPA98nCsaBxg9J4CnXXKUSBQ8OoEuK7kzqu59QIDAQAB",
+  "oauth2":{
+    "client_id": "255808228529-j3u9pofhbu7vhvfo0hhshl34c5ongts1.apps.googleusercontent.com",
+    "scopes":["https://www.googleapis.com/auth/classroom.courses.readonly",
+    "https://www.googleapis.com/auth/classroom.student-submissions.me.readonly"]
+  },
+  "permissions":[
+    "identity",
+    "storage"
+  ]
+}

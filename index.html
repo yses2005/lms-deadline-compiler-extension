@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .popup-container {
+      width: 300px;
+      height: 400px;
+      overflow-y: auto;
+      text-align: center;
+    }
+    .button-container {
+      margin-top: 20px;
+      display: inline-block;
+    }
+      button {
+        padding: 10px;
+        background-color: #536DFE;
+        display: inline-block;
+      }
+
+    ul {
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      list-style: none;
+      background-color: #FFE082;
+      padding: 10px;
+      margin-bottom: 5px;
+      font-size: 12px;
+      font-weight: bold;
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      background-color: #536DFE;
+      color: #FFF;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+  </style>
+  <title>My Extension Popup</title>
+  <script src="oauth.js"></script>
+</head>
+<body>
+  <h1>LMS Compiler Extension</h1>
+  <div class="button-container">
+    <button id="fetchButton">Fetch Deadlines</button>
+    <button id="logoutButton">Log out</button>
+  </div>
+  <div class="popup-container">
+    <ul id="deadline-list">
+    </ul>
+  </div>
+</body>
+</html>
