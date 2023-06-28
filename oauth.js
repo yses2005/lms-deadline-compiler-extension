@@ -42,15 +42,24 @@ window.onload = function() {
       
   }
   document.querySelector('#logoutButton').addEventListener('click', function() {
-      chrome.identity.getAuthToken({ interactive: false }, function(currentToken) {
-        if (!chrome.runtime.lastError && currentToken) {
-          chrome.identity.removeCachedAuthToken({ token: currentToken }, function() {
-            console.log('User logged out.');
-            clearAssignments();
-          });
-        }
-      });
+    chrome.identity.getAuthToken({ interactive: false }, function(currentToken) {
+      if (!chrome.runtime.lastError && currentToken) {
+        chrome.identity.removeCachedAuthToken({ token: currentToken }, function() {
+          console.log('User logged out.');
+          clearAssignments();
+          chrome.identity.launchWebAuthFlow(
+            {
+              url: 'https://accounts.google.com/logout',
+              interactive: false
+            },
+            function() {
+              console.log('Token cache cleared. Please sign in again.');
+            }
+          );
+        });
+      }
     });
+  });
 
   function fetchCourseAssignments(token, courseId) {
     let init = {
