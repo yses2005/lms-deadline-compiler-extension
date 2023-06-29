@@ -5,7 +5,6 @@
     .popup-container {
       width: 300px;
       height: 400px;
-      overflow-y: auto;
       text-align: center;
       background-color: #F3E5D6;
     }
@@ -37,7 +36,7 @@
 
     li {
       list-style: none;
-      background-color: #FFE082;
+      background-color: #c2c9bd;
       padding: 10px;
       margin-bottom: 5px;
       font-size: 12px;
@@ -85,7 +84,17 @@
       visibility: visible;
       opacity: 1;
     }
-    
+    #greeting{
+      display: inline-block;
+      vertical-align: middle;
+      padding: 10px;
+      font-size: 15px;
+      font-weight: bold;
+      font-family: Arial, sans-serif;
+    }
+    ::-webkit-scrollbar {
+  width: 1px;
+}
   </style>
   <title>My Extension Popup</title>
   <script src="oauth.js"></script>
@@ -104,6 +113,8 @@
       <button id="logoutButton" class="tooltip-button" title="Tooltip Message"><i class="material-icons">logout</i></button><span class="tooltiptext">Logout</span>
     </div>
   </div>
+  
+  <div id="greeting"></div>
   <div class="popup-container">
     <ul id="deadline-list">
     </ul>

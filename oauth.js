@@ -15,6 +15,12 @@ window.onload = function() {
               },
               'contentType': 'json'
             };
+            fetch(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json`, init)
+        .then((response) => response.json())
+        .then(function(data) {
+          const userName = data.name;
+          displayGreeting(userName);
+        });
             fetch(
               `https://classroom.googleapis.com/v1/courses?key=AIzaSyA1KIm7t2nRjqHD483Es6B8nIvZZTV6rUw`,
               init
@@ -47,6 +53,7 @@ window.onload = function() {
         chrome.identity.removeCachedAuthToken({ token: currentToken }, function() {
           console.log('User logged out.');
           clearAssignments();
+          clearGreeting();
           chrome.identity.launchWebAuthFlow(
             {
               url: 'https://accounts.google.com/logout',
@@ -60,7 +67,16 @@ window.onload = function() {
       }
     });
   });
+  function displayGreeting(userName) {
+    const greetingElement = document.querySelector('#greeting');
+    greetingElement.textContent = `Hi, ${userName}`;
+    greetingElement.style.display = 'block';
+    saveGreeting(userName);
+  }
 
+  function saveGreeting(greeting) {
+    chrome.storage.local.set({ greeting: greeting });
+  }
   function fetchCourseAssignments(token, courseId) {
     let init = {
       method: 'GET',
@@ -91,6 +107,13 @@ window.onload = function() {
   function displayAssignments(assignments) {
     let deadlineList = document.querySelector("#deadline-list");
     deadlineList.innerHTML = ''; // Clear previous assignments
+
+    assignments.sort((a, b) => {
+      const dateA = new Date(a.dueDate.year, a.dueDate.month - 1, a.dueDate.day);
+      const dateB = new Date(b.dueDate.year, b.dueDate.month - 1, b.dueDate.day);
+      return dateA - dateB;
+    });
+
     assignments.forEach(function(assignment) {
       let dline = document.createElement("li");
       dline.addEventListener('click', () => {
@@ -102,10 +125,15 @@ window.onload = function() {
   }
 
   function loadAssignments() {
-    chrome.storage.local.get('assignments', function(result) {
+    chrome.storage.local.get(['assignments', 'greeting'], function(result) {
       if (result.assignments) {
         const assignments = JSON.parse(result.assignments);
         displayAssignments(assignments);
+      }
+
+      if (result.greeting) {
+        const greeting = result.greeting;
+        displayGreeting(greeting);
       }
     });
   }
@@ -114,6 +142,13 @@ window.onload = function() {
       chrome.storage.local.remove('assignments');
       let deadlineList = document.querySelector("#deadline-list");
       deadlineList.innerHTML = '';
+    }
+
+    function clearGreeting() {
+      chrome.storage.local.remove('greeting');
+      let greetingElement = document.querySelector('#greeting');
+      greetingElement.textContent = '';
+      greetingElement.style.display = 'none';
     }
 
   loadAssignments();
