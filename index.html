@@ -7,15 +7,27 @@
       height: 400px;
       overflow-y: auto;
       text-align: center;
+      background-color: #F3E5D6;
     }
     .button-container {
+      justify-content: center;
       margin-top: 20px;
-      display: inline-block;
+      display: flex;
     }
       button {
+        border-radius: 25px;
         padding: 10px;
-        background-color: #536DFE;
+        background: #E6CFC8;
         display: inline-block;
+        height: 50px;
+        vertical-align: middle;
+        color: #fff;
+        outline: 0;
+        margin: 10px;
+        border-color: #E6CFC8;
+      }
+      button:hover{
+        background: #B8A6A0;
       }
 
     ul {
@@ -34,21 +46,63 @@
     }
 
     h1 {
+      border-radius: 25px;
       text-align: center;
-      background-color: #536DFE;
+      background-color: #C4BDC9;
       color: #FFF;
       padding: 20px;
-      font-family: Arial, sans-serif;
+      font-family: 'PT Sans Narrow', sans-serif;
     }
+
+    body{
+      background-color: #F3E5D6;
+      
+    }
+
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 120px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    
   </style>
   <title>My Extension Popup</title>
   <script src="oauth.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link href="https://fonts.googleapis.com/css2?family=PT+Sans+Narrow&display=swap" rel="stylesheet">
 </head>
 <body>
-  <h1>LMS Compiler Extension</h1>
+  <h1>
+    Unified LMS Schedule
+  </h1>
   <div class="button-container">
-    <button id="fetchButton">Fetch Deadlines</button>
-    <button id="logoutButton">Log out</button>
+    <div class="tooltip">
+      <button id="fetchButton" class="tooltip-button" title="Tooltip Message"><i class="material-icons">download</i></button><span class="tooltiptext">Import Schedule</span>
+    </div>
+    <div class="tooltip">
+      <button id="logoutButton" class="tooltip-button" title="Tooltip Message"><i class="material-icons">logout</i></button><span class="tooltiptext">Logout</span>
+    </div>
   </div>
   <div class="popup-container">
     <ul id="deadline-list">
