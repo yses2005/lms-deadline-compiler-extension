@@ -1,8 +1,9 @@
 .month {
   padding: 70px 25px;
-  width: 14.2857%;
+  width: 95%;
   background: #1abc9c;
   text-align: center;
+  align-self: center;
 }
 
 .month ul {
@@ -35,7 +36,7 @@
 
 .weekdays li {
   display: inline-block;
-  width: 14.2857%;
+  width: 12%;
   color: #666;
   text-align: center;
 }
@@ -49,7 +50,7 @@
 .days li {
   list-style-type: none;
   display: inline-block;
-  width: 10%;
+  width: 12%;
   text-align: center;
   margin-bottom: 5px;
   font-size:12px;
