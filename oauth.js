@@ -94,7 +94,7 @@ window.onload = function() {
       .then((response) => response.json())
       .then(function(data) {
         const assignments = data.courseWork.filter((assignment) => {
-          return assignment.dueDate.year && assignment.dueDate.year >= 2023 && assignment.dueDate.month>=5;
+          return assignment.dueDate.year && assignment.dueDate.year >= 2015 && assignment.dueDate.month>=5;
         });
         return assignments;
       });
@@ -152,4 +152,51 @@ window.onload = function() {
     }
 
   loadAssignments();
+
+  document.querySelector('#calendarButton').addEventListener('click', function() {
+    createCalendar(calendar, 2023, 6);
+  });
+
+  function createCalendar(elem, year, month) {
+    let mon = month - 1; // months in JS are 0..11, not 1..12
+    let d = new Date(year, mon);
+
+    let table = '<table><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr><tr>';
+
+    // spaces for the first row
+    // from Monday till the first day of the month
+    // * * * 1  2  3  4
+    for (let i = 0; i < getDay(d); i++) {
+      table += '<td></td>';
+    }
+
+    // <td> with actual dates
+    while (d.getMonth() == mon) {
+      table += '<td>' + d.getDate() + '</td>';
+
+      if (getDay(d) % 7 == 6) { // sunday, last day of week - newline
+        table += '</tr><tr>';
+      }
+
+      d.setDate(d.getDate() + 1);
+    }
+
+    // add spaces after last days of month for the last row
+    // 29 30 31 * * * *
+    if (getDay(d) != 0) {
+      for (let i = getDay(d); i < 7; i++) {
+        table += '<td></td>';
+      }
+    }
+
+    // close the table
+    table += '</tr></table>';
+
+    elem.innerHTML = table;
+  }
+
+  function getDay(date) { // get day number from 0 (monday) to 6 (sunday)
+    let day = date.getDay();
+    return day;
+  }
 };
