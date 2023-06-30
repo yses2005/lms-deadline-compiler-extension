@@ -14,10 +14,11 @@
     "client_id": "255808228529-j3u9pofhbu7vhvfo0hhshl34c5ongts1.apps.googleusercontent.com",
     "scopes":["https://www.googleapis.com/auth/classroom.courses.readonly",
     "https://www.googleapis.com/auth/classroom.student-submissions.me.readonly",
-  "https://www.googleapis.com/auth/userinfo.profile"]
+    "https://www.googleapis.com/auth/userinfo.profile"]
   },
   "permissions":[
     "identity",
     "storage"
-  ]
+  ],
+  "host_permissions": ["https://uplb.instructure.com/api/*"]
 }

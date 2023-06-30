@@ -21,28 +21,56 @@ window.onload = function() {
           const userName = data.name;
           displayGreeting(userName);
         });
-            fetch(
-              `https://classroom.googleapis.com/v1/courses?key=AIzaSyA1KIm7t2nRjqHD483Es6B8nIvZZTV6rUw`,
-              init
-            )
-              .then((response) => response.json())
-              .then(function(data) {
-                const courses = data.courses;
-                let assignments = [];
-                courses.forEach(function(course) {
-                  fetchCourseAssignments(token, course.id)
-                    .then((courseAssignments) => {
-                      assignments = assignments.concat(courseAssignments);
-                      saveAssignments(assignments);
-                      displayAssignments(assignments);
-                    })
-                    .catch((error) => {
-                      console.log('Error fetching course assignments:', error);
-                    });
+            // fetch(
+            //   `https://classroom.googleapis.com/v1/courses?key=AIzaSyA1KIm7t2nRjqHD483Es6B8nIvZZTV6rUw`,
+            //   init
+            // )
+            //   .then((response) => response.json())
+            //   .then(function(data) {
+            //     const courses = data.courses;
+            //     let assignments = [];
+            //     courses.forEach(function(course) {
+            //       fetchCourseAssignments(token, course.id)
+            //         .then((courseAssignments) => {
+            //           assignments = assignments.concat(courseAssignments);
+            //           saveAssignments(assignments);
+            //           displayAssignments(assignments);
+            //         })
+            //         .catch((error) => {
+            //           console.log('Error fetching course assignments:', error);
+            //         });
+            //     });
+            //   });
+              let init2 = {
+                method: 'GET',
+                async: true,
+                headers: {
+                  Authorization: 'Bearer 19045~AHIqmK1xCpaF533iPmvVoUxLso6YEC8Jhs8XmnvPujGpM9e9R6P193adKxOCKpap',
+                  'Content-Type': 'application/json'
+                },
+                'contentType': 'json'
+              };
+              fetch(
+                `https://uplb.instructure.com/api/v1/courses`,
+                init2
+              )
+                .then((response) => response.json())
+                .then(function(data) {
+                  let assignments = [];
+                  data.forEach(function(course) {
+                    fetchCanvasAssignments(token, course.id)
+                      .then((response) => {
+                        assignments = assignments.concat(response);
+                        saveAssignments(assignments);
+                        displayCanvasAssignments(assignments);
+                      })
+                      .catch((error) => {
+                        console.log('Error fetching course assignments:', error);
+                      });
+                  });
                 });
-              });
          }else{
-          comnsole.log("FAILED")
+          console.log("FAILED")
          }
         });
       
@@ -94,34 +122,63 @@ window.onload = function() {
       .then((response) => response.json())
       .then(function(data) {
         const assignments = data.courseWork.filter((assignment) => {
-          return assignment.dueDate.year && assignment.dueDate.year >= 2015 && assignment.dueDate.month>=5;
+          return assignment.dueDate.year && assignment.dueDate.year >= 2021 && assignment.dueDate.month>=5;
         });
         return assignments;
       });
+  }
+
+  //canvas token: 19045~AHIqmK1xCpaF533iPmvVoUxLso6YEC8Jhs8XmnvPujGpM9e9R6P193adKxOCKpap
+  //curl https://uplb.instructure.com/api/v1/courses/${courseId}/assignments?order_by=due_at -H "Authorization: Bearer 19045~AHIqmK1xCpaF533iPmvVoUxLso6YEC8Jhs8XmnvPujGpM9e9R6P193adKxOCKpap"
+  //parameter of interest: name, due_at
+  //curl https://uplb.instructure.com/api/v1/courses -H "Authorization: Bearer 19045~AHIqmK1xCpaF533iPmvVoUxLso6YEC8Jhs8XmnvPujGpM9e9R6P193adKxOCKpap"
+  //parameter of interest: id
+  //curl https://uplb.instructure.com/api/v1/users/self -H "Authorization: Bearer 19045~AHIqmK1xCpaF533iPmvVoUxLso6YEC8Jhs8XmnvPujGpM9e9R6P193adKxOCKpap"
+
+  /**
+   * Fetch assignment data from Canvas LMS.
+   */
+  async function fetchCanvasAssignments(token, courseId){
+    let init = {
+      method: 'GET',
+      async: true,
+      headers: {
+        Authorization: 'Bearer 19045~AHIqmK1xCpaF533iPmvVoUxLso6YEC8Jhs8XmnvPujGpM9e9R6P193adKxOCKpap',
+        'Content-Type': 'application/json'
+      },
+      'contentType': 'json'
+    };
+    const response = await fetch(
+      `https://uplb.instructure.com/api/v1/courses/${courseId}/assignments`,
+      init
+    );
+    const data = await response.json();
+    console.log(data);
+    const cAssignments = data;
+    return cAssignments;
   }
 
   function saveAssignments(assignments) {
     chrome.storage.local.set({ assignments: JSON.stringify(assignments) });
   }
 
-  function displayAssignments(assignments) {
+  function displayCanvasAssignments(assignments) {
     let deadlineList = document.querySelector("#deadline-list");
     deadlineList.innerHTML = ''; // Clear previous assignments
-
     assignments.sort((a, b) => {
-      const dateA = new Date(a.dueDate.year, a.dueDate.month - 1, a.dueDate.day);
-      const dateB = new Date(b.dueDate.year, b.dueDate.month - 1, b.dueDate.day);
+      const dateA = new Date(a.due_at);
+      const dateB = new Date(b.due_at);
       return dateA - dateB;
     });
-
     assignments.forEach(function(assignment) {
       let dline = document.createElement("li");
       dline.addEventListener('click', () => {
-        window.open(assignment.alternateLink, '_blank');
+        window.open(assignment.html_url, '_blank');
       });
-      dline.innerHTML = `Assignment Title: ${assignment.title}<br/> Assignment Due Date: ${assignment.dueDate.year}-${assignment.dueDate.month}-${assignment.dueDate.day}`;
+      dline.innerHTML = `Assignment Title: ${assignment.name}<br/> Assignment Due Date: ${assignment.due_at}`;
       deadlineList.appendChild(dline);
     });
+    // TODO due date
   }
 
   function loadAssignments() {
