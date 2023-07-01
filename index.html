@@ -4,7 +4,7 @@
   <link href="calendar.css" rel="stylesheet">
   <style>
     .popup-container {
-      width: 300px;
+      width: 350px;
       height: 400px;
       text-align: center;
       background-color: #F3E5D6;
@@ -26,6 +26,7 @@
         margin: 10px;
         border-color: #E6CFC8;
       }
+
       button:hover{
         background: #B8A6A0;
         cursor: pointer;
@@ -47,12 +48,11 @@
       border-radius: 12px;
       color: #000;
       border: 2px solid;
-      box-shadow: 1px 2px;
+      border-color: #8FBA9E;
     }
 
     li:hover {
-      background-color: #CFDDBC;
-      color: #000;
+      background-color: #A5C8B1;
       cursor: pointer;
     }
 
@@ -121,14 +121,112 @@
       font-weight: bold;
       background-color: #E6E6E6;
     }
+
     ::-webkit-scrollbar {
-  width: 1px;
+    width: 1px;
+    }
+
+  
+.wrapper{
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+}
+.wrapper header{
+  display: flex;
+  align-items: center;
+  padding: 5px 25px 10px;
+  justify-content: space-between;
+}
+header .icons{
+  display: flex;
+}
+header .icons span{
+  height: 38px;
+  width: 38px;
+  margin: 0 1px;
+  cursor: pointer;
+  color: #878787;
+  text-align: center;
+  line-height: 38px;
+  font-size: 25px;
+  user-select: none;
+  border-radius: 50%;
+}
+.icons span:last-child{
+  margin-right: -10px;
+}
+header .icons span:hover{
+  background: #f2f2f2;
+}
+header .current-date{
+  font-size: 1.45rem;
+  font-weight: 500;
+}
+.calendar{
+  padding: 20px;
+  font-size: 8px;
+}
+.calendar ul{
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  text-align: center;
+}
+.calendar .days{
+  margin-bottom: 1px;
+}
+.calendar li{
+  color: #333;
+  width: 20px;
+  font-size: 12px;
+  background-color: #FFF;
+  border-radius: 45%;
+  border-color: #FFF;
+}
+.calendar .weeks li{
+  font-weight: 500;
+  cursor: default;
+  font-size: 15px;
+}
+.calendar .days li{
+  z-index: 1;
+  cursor: pointer;
+  position: relative;
+  margin-top: 30px;
+}
+.days li.inactive{
+  color: #aaa;
+}
+.days li.active{
+  color: #fff;
+}
+.days li::before{
+  position: absolute;
+  content: "";
+  left: 50%;
+  top: 50%;
+  height: 40px;
+  width: 40px;
+  z-index: -1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.days li.active::before{
+  background: #8FBA9E;
+}
+.days li:not(.active):hover::before{
+  background: #f2f2f2;
 }
   </style>
   <title>My Extension Popup</title>
   <script src="oauth.js"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link href="https://fonts.googleapis.com/css2?family=PT+Sans+Narrow&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Font Link for Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
 </head>
 <body>
   <h1>
@@ -146,10 +244,33 @@
     </div>
   </div>
   
+  <div class="wrapper">
+    <header>
+      <p class="current-date"></p>
+      <div class="icons">
+        <span id="prev" class="material-symbols-rounded">chevron_left</span>
+        <span id="next" class="material-symbols-rounded">chevron_right</span>
+      </div>
+    </header>
+    <div class="calendar">
+      <ul class="weeks">
+        <li>Su</li>
+        <li>M</li>
+        <li>T</li>
+        <li>W</li>
+        <li>Th</li>
+        <li>F</li>
+        <li>S</li>
+      </ul>
+      <ul class="days"></ul>
+    </div>
+  </div>
+
   <div id="greeting"></div>
   <div class="popup-container">
     <ul id="deadline-list">
     </ul>
   </div>
+
 </body>
 </html>
