@@ -172,9 +172,15 @@ window.onload = function() {
    */
   function saveCanvasAssignments(assignments) {
     processedAssignments = [];
+    //currentDate = Date(Date.now());
+    currentDate = Date.parse('2022-01-01');
+
     assignments.forEach(function(assignment){
       importantDetails = {"id":assignment.id, "name": assignment.name, "due": assignment.due_at, "url": assignment.html_url};
-      processedAssignments = processedAssignments.concat(importantDetails)
+      //filter deadlines after a certain date/time
+      if ((Date.parse(importantDetails.due) > currentDate) || (importantDetails.due == null)){
+        processedAssignments = processedAssignments.concat(importantDetails);
+      }
     });
     chrome.storage.local.get(['assignments'], function(result) {
       if (result.assignments) {
@@ -190,8 +196,8 @@ window.onload = function() {
     let deadlineList = document.querySelector("#deadline-list");
     deadlineList.innerHTML = ''; // Clear previous assignments
     assignments.sort((a, b) => {
-      const dateA = new Date(a.due);
-      const dateB = new Date(b.due);
+      const dateA = Date.parse(a.due);
+      const dateB = Date.parse(b.due);
       return dateA - dateB;
     });
     assignments.forEach(function(assignment) {
