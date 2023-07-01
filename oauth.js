@@ -41,40 +41,49 @@ window.onload = function() {
             //         });
             //     });
             //   });
-              let init2 = {
-                method: 'GET',
-                async: true,
-                headers: {
-                  Authorization: 'Bearer 19045~AHIqmK1xCpaF533iPmvVoUxLso6YEC8Jhs8XmnvPujGpM9e9R6P193adKxOCKpap',
-                  'Content-Type': 'application/json'
-                },
-                'contentType': 'json'
-              };
-              fetch(
-                `https://uplb.instructure.com/api/v1/courses`,
-                init2
-              )
-                .then((response) => response.json())
-                .then(function(data) {
-                  let assignments = [];
-                  data.forEach(function(course) {
-                    fetchCanvasAssignments(token, course.id)
-                      .then((response) => {
-                        assignments = assignments.concat(response);
-                        saveAssignments(assignments);
-                        displayCanvasAssignments(assignments);
-                      })
-                      .catch((error) => {
-                        console.log('Error fetching course assignments:', error);
-                      });
-                  });
-                });
+            let canvasToken = '19045~AHIqmK1xCpaF533iPmvVoUxLso6YEC8Jhs8XmnvPujGpM9e9R6P193adKxOCKpap'
+            getCanvasCourses(canvasToken)
          }else{
           console.log("FAILED")
          }
         });
       
   }
+
+  /**
+   * Get Courses from Canvas and the Assignments assigned in that Course
+  */
+  function getCanvasCourses(token){
+    let init2 = {
+      method: 'GET',
+      async: true,
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      'contentType': 'json'
+    };
+    fetch(
+      `https://uplb.instructure.com/api/v1/courses`,
+      init2
+    )
+      .then((response) => response.json())
+      .then(function(data) {
+        let assignments = [];
+        data.forEach(function(course) {
+          fetchCanvasAssignments(token, course.id)
+            .then((response) => {
+              assignments = assignments.concat(response);
+              saveCanvasAssignments(response);
+            })
+            .catch((error) => {
+              console.log('Error fetching course assignments:', error);
+            });
+        });
+      });
+      loadAssignments();
+  }
+
   document.querySelector('#logoutButton').addEventListener('click', function() {
     chrome.identity.getAuthToken({ interactive: false }, function(currentToken) {
       if (!chrome.runtime.lastError && currentToken) {
@@ -105,6 +114,7 @@ window.onload = function() {
   function saveGreeting(greeting) {
     chrome.storage.local.set({ greeting: greeting });
   }
+
   function fetchCourseAssignments(token, courseId) {
     let init = {
       method: 'GET',
@@ -143,7 +153,7 @@ window.onload = function() {
       method: 'GET',
       async: true,
       headers: {
-        Authorization: 'Bearer 19045~AHIqmK1xCpaF533iPmvVoUxLso6YEC8Jhs8XmnvPujGpM9e9R6P193adKxOCKpap',
+        Authorization: 'Bearer ' + token,
         'Content-Type': 'application/json'
       },
       'contentType': 'json'
@@ -153,21 +163,35 @@ window.onload = function() {
       init
     );
     const data = await response.json();
-    console.log(data);
     const cAssignments = data;
     return cAssignments;
   }
 
-  function saveAssignments(assignments) {
-    chrome.storage.local.set({ assignments: JSON.stringify(assignments) });
+  /**
+   * Gets important details from canvas assignments and saves them to Browser
+   */
+  function saveCanvasAssignments(assignments) {
+    processedAssignments = [];
+    assignments.forEach(function(assignment){
+      importantDetails = {"id":assignment.id, "name": assignment.name, "due": assignment.due_at, "url": assignment.html_url};
+      processedAssignments = processedAssignments.concat(importantDetails)
+    });
+    chrome.storage.local.get(['assignments'], function(result) {
+      if (result.assignments) {
+        newAssignments = JSON.parse(result.assignments).concat(processedAssignments);
+        chrome.storage.local.set({ assignments: JSON.stringify(newAssignments) });
+      }else{
+        chrome.storage.local.set({ assignments: JSON.stringify(processedAssignments) });
+      }
+    });
   }
 
-  function displayCanvasAssignments(assignments) {
+  function displayAssignments(assignments) {
     let deadlineList = document.querySelector("#deadline-list");
     deadlineList.innerHTML = ''; // Clear previous assignments
     assignments.sort((a, b) => {
-      const dateA = new Date(a.due_at);
-      const dateB = new Date(b.due_at);
+      const dateA = new Date(a.due);
+      const dateB = new Date(b.due);
       return dateA - dateB;
     });
     assignments.forEach(function(assignment) {
@@ -175,7 +199,7 @@ window.onload = function() {
       dline.addEventListener('click', () => {
         window.open(assignment.html_url, '_blank');
       });
-      dline.innerHTML = `Assignment Title: ${assignment.name}<br/> Assignment Due Date: ${assignment.due_at}`;
+      dline.innerHTML = `${assignment.name}<br/> Due Date: ${assignment.due}`;
       deadlineList.appendChild(dline);
     });
     // TODO due date
@@ -193,8 +217,9 @@ window.onload = function() {
         displayGreeting(greeting);
       }
     });
+    chrome.storage.local.remove('assignments');
   }
-
+  loadAssignments();
   function clearAssignments() {
       chrome.storage.local.remove('assignments');
       let deadlineList = document.querySelector("#deadline-list");
@@ -207,8 +232,7 @@ window.onload = function() {
       greetingElement.textContent = '';
       greetingElement.style.display = 'none';
     }
-
-  loadAssignments();
+  //loadAssignments();
 
   document.querySelector('#calendarButton').addEventListener('click', function() {
     createCalendar(calendar, 2023, 6);
