@@ -21,33 +21,48 @@ window.onload = function() {
           const userName = data.name;
           displayGreeting(userName);
         });
-            // fetch(
-            //   `https://classroom.googleapis.com/v1/courses?key=AIzaSyA1KIm7t2nRjqHD483Es6B8nIvZZTV6rUw`,
-            //   init
-            // )
-            //   .then((response) => response.json())
-            //   .then(function(data) {
-            //     const courses = data.courses;
-            //     let assignments = [];
-            //     courses.forEach(function(course) {
-            //       fetchCourseAssignments(token, course.id)
-            //         .then((courseAssignments) => {
-            //           assignments = assignments.concat(courseAssignments);
-            //           saveAssignments(assignments);
-            //           displayAssignments(assignments);
-            //         })
-            //         .catch((error) => {
-            //           console.log('Error fetching course assignments:', error);
-            //         });
-            //     });
-            //   });
+            getClassroomCourses(token);
+          
             let canvasToken = '19045~AHIqmK1xCpaF533iPmvVoUxLso6YEC8Jhs8XmnvPujGpM9e9R6P193adKxOCKpap'
             getCanvasCourses(canvasToken)
          }else{
           console.log("FAILED")
          }
         });
-      
+      loadAssignments();
+  }
+  /**
+   * Get Courses from Canvas and the Assignments assigned in that Course
+  */
+  function getClassroomCourses(token){
+    let init = {
+      method: 'GET',
+      async: true,
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      'contentType': 'json'
+    };
+    fetch(
+      `https://classroom.googleapis.com/v1/courses?key=AIzaSyA1KIm7t2nRjqHD483Es6B8nIvZZTV6rUw`,
+      init
+    )
+      .then((response) => response.json())
+      .then(function(data) {
+        const courses = data.courses;
+        let assignments = [];
+        courses.forEach(function(course) {
+          fetchClassroomAssignments(token, course.id)
+            .then((courseAssignments) => {
+              assignments = assignments.concat(courseAssignments);
+              saveClassroomAssignments(assignments);
+            })
+            .catch((error) => {
+              console.log('Error fetching course assignments:', error);
+            });
+        });
+      });
   }
 
   /**
@@ -69,19 +84,18 @@ window.onload = function() {
     )
       .then((response) => response.json())
       .then(function(data) {
-        let assignments = [];
+        assignments = [];
         data.forEach(function(course) {
           fetchCanvasAssignments(token, course.id)
             .then((response) => {
               assignments = assignments.concat(response);
-              saveCanvasAssignments(response);
+              saveCanvasAssignments(assignments);
             })
             .catch((error) => {
               console.log('Error fetching course assignments:', error);
             });
         });
       });
-      loadAssignments();
   }
 
   document.querySelector('#logoutButton').addEventListener('click', function() {
@@ -115,7 +129,10 @@ window.onload = function() {
     chrome.storage.local.set({ greeting: greeting });
   }
 
-  function fetchCourseAssignments(token, courseId) {
+  /**
+   * Fetch assignment data from Google Classroom LMS.
+   */
+  async function fetchClassroomAssignments(token, courseId) {
     let init = {
       method: 'GET',
       async: true,
@@ -125,17 +142,12 @@ window.onload = function() {
       },
       'contentType': 'json'
     };
-    return fetch(
+    const response = await fetch(
       `https://classroom.googleapis.com/v1/courses/${courseId}/courseWork?key=AIzaSyA1KIm7t2nRjqHD483Es6B8nIvZZTV6rUw&fields=courseWork(id,title,dueDate,alternateLink)`,
       init
-    )
-      .then((response) => response.json())
-      .then(function(data) {
-        const assignments = data.courseWork.filter((assignment) => {
-          return assignment.dueDate.year && assignment.dueDate.year >= 2021 && assignment.dueDate.month>=5;
-        });
-        return assignments;
-      });
+    );
+    const data = await response.json();
+    return data;
   }
 
   //canvas token: 19045~AHIqmK1xCpaF533iPmvVoUxLso6YEC8Jhs8XmnvPujGpM9e9R6P193adKxOCKpap
@@ -168,31 +180,67 @@ window.onload = function() {
   }
 
   /**
+   * Gets important details from google classroom assignments and saves them to Browser
+   */
+  function saveClassroomAssignments(assignments) {
+    processedAssignments = [];
+    //currentDate = Date(Date.now());
+    currentDate = Date.parse('2023-01-01');
+
+    assignments.forEach(function(assignment){
+      for (let i = 0; i < Object.keys(assignment).length; i++) {
+        due_date = assignment.courseWork[i].dueDate
+        if (due_date){
+          strDue = due_date.year.toString() + "-" + due_date.month.toString() + "-" + due_date.day.toString()
+          utsDue = Date.parse(strDue)
+          if(utsDue > currentDate){
+            importantDetails = {"id":assignment.id, "name": assignment.courseWork[i].title, "due": strDue, "url": assignment.courseWork[i].alternateLink};
+            processedAssignments = processedAssignments.concat(importantDetails);
+          }
+        }
+      }
+    });
+
+
+    chrome.storage.local.get(['assignments'], function(result) {
+      if (result.assignments) {
+        chrome.storage.local.set({ assignments: JSON.stringify(processedAssignments) });
+      }else{
+        newAssignments = processedAssignments;
+        chrome.storage.local.set({ assignments: JSON.stringify(newAssignments) });
+      }
+    });
+  }
+
+
+  /**
    * Gets important details from canvas assignments and saves them to Browser
    */
   function saveCanvasAssignments(assignments) {
     processedAssignments = [];
     //currentDate = Date(Date.now());
-    currentDate = Date.parse('2022-01-01');
+    currentDate = Date.parse('2023-01-01');
 
     assignments.forEach(function(assignment){
       importantDetails = {"id":assignment.id, "name": assignment.name, "due": assignment.due_at, "url": assignment.html_url};
       //filter deadlines after a certain date/time
-      if ((Date.parse(importantDetails.due) > currentDate) || (importantDetails.due == null)){
+      if ((Date.parse(importantDetails.due) > currentDate) && (importantDetails.due !== null)){
         processedAssignments = processedAssignments.concat(importantDetails);
       }
+      return assignments;
     });
     chrome.storage.local.get(['assignments'], function(result) {
       if (result.assignments) {
-        newAssignments = JSON.parse(result.assignments).concat(processedAssignments);
-        chrome.storage.local.set({ assignments: JSON.stringify(newAssignments) });
-      }else{
         chrome.storage.local.set({ assignments: JSON.stringify(processedAssignments) });
+      }else{
+        newAssignments = processedAssignments;
+        chrome.storage.local.set({ assignments: JSON.stringify(newAssignments) });
       }
     });
   }
 
   function displayAssignments(assignments) {
+    console.log(assignments)
     let deadlineList = document.querySelector("#deadline-list");
     deadlineList.innerHTML = ''; // Clear previous assignments
     assignments.sort((a, b) => {
@@ -203,12 +251,12 @@ window.onload = function() {
     assignments.forEach(function(assignment) {
       let dline = document.createElement("li");
       dline.addEventListener('click', () => {
-        window.open(assignment.html_url, '_blank');
+        window.open(assignment.url, '_blank');
       });
       dline.innerHTML = `${assignment.name}<br/> Due Date: ${assignment.due}`;
       deadlineList.appendChild(dline);
     });
-    // TODO due date
+
   }
 
   function loadAssignments() {
@@ -223,9 +271,8 @@ window.onload = function() {
         displayGreeting(greeting);
       }
     });
-    chrome.storage.local.remove('assignments');
   }
-  loadAssignments();
+
   function clearAssignments() {
       chrome.storage.local.remove('assignments');
       let deadlineList = document.querySelector("#deadline-list");
@@ -238,7 +285,6 @@ window.onload = function() {
       greetingElement.textContent = '';
       greetingElement.style.display = 'none';
     }
-  //loadAssignments();
 
   document.querySelector('#calendarButton').addEventListener('click', function() {
     createCalendar(calendar, 2023, 6);
