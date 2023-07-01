@@ -185,7 +185,7 @@ window.onload = function() {
   function saveClassroomAssignments(assignments) {
     processedAssignments = [];
     //currentDate = Date(Date.now());
-    currentDate = Date.parse('2023-01-01');
+    let currentDate = Date.parse('2023-01-01');
 
     assignments.forEach(function(assignment){
       for (let i = 0; i < Object.keys(assignment).length; i++) {
@@ -219,7 +219,7 @@ window.onload = function() {
   function saveCanvasAssignments(assignments) {
     processedAssignments = [];
     //currentDate = Date(Date.now());
-    currentDate = Date.parse('2023-01-01');
+    let currentDate = Date.parse('2023-01-01');
 
     assignments.forEach(function(assignment){
       importantDetails = {"id":assignment.id, "name": assignment.name, "due": assignment.due_at, "url": assignment.html_url};
@@ -240,7 +240,6 @@ window.onload = function() {
   }
 
   function displayAssignments(assignments) {
-    console.log(assignments)
     let deadlineList = document.querySelector("#deadline-list");
     deadlineList.innerHTML = ''; // Clear previous assignments
     assignments.sort((a, b) => {
